@@ -143,7 +143,7 @@ I created a scatterplot because I wanted to visualize another aspect of the data
 ```{R}
 # pvi_amount density plot by party
 innerdata %>% group_by(pvi_party) %>% ggplot(aes(pvi_amount,fill=pvi_party))+
-  geom_density(alpha=0.6) + ggtitle("Partisan Voting Index Distribution by Party") + xlab("Partisan Voting Index") + scale_fill_brewer(palette="Dark2") + geom_vline(aes(xintercept = mean(pvi_amount), linetype="dashed"))
+  geom_density(alpha=0.6) + ggtitle("Partisan Voting Index Distribution by Party") + xlab("Partisan Voting Index") + scale_fill_brewer(palette="Dark2") + geom_vline(aes(xintercept = mean(pvi_amount), linetype="solid"))
 ```
 
 I created a density plot because I wanted to visualize the overlap of states partisan lean distributions in regards to their partisan voting index. There does in fact seem to be a lot of overlap between the Democratic and Republican parties. However the partisan voting index peak for the Democratic party is lower than the peak for the Republican party, meaning that the Republican party seems to have a higher PVI.
