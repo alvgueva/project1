@@ -1743,8 +1743,9 @@ innerdata %&gt;% group_by(state, pvi_party) %&gt;% select(pvi_amount) %&gt;%
 ## # … with 40 more rows</code></pre>
 <pre class="r"><code># Find the mean, sd, and variance of each numeric variable
 # from original inner join, grouping by party
-innerdata %&gt;% group_by(pvi_party) %&gt;% summarize_at(c(3:12, 14), 
-    .funs = list(mean = mean, sd = sd, var = var), na.rm = T)</code></pre>
+innernumericsum &lt;- innerdata %&gt;% group_by(pvi_party) %&gt;% summarize_at(c(3:12, 
+    14), .funs = list(mean = mean, sd = sd, var = var), na.rm = T)
+head(innernumericsum)</code></pre>
 <pre><code>## # A tibble: 2 x 34
 ##   pvi_party median_house_in… share_unemp_sea… share_pop_metro… share_pop_hs_me…
 ##   &lt;chr&gt;                &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;
@@ -1767,159 +1768,52 @@ innerdata %&gt;% group_by(pvi_party) %&gt;% summarize_at(c(3:12, 14),
 ## #   pvi_amount_var &lt;dbl&gt;</code></pre>
 <pre class="r"><code># number of NAs for each variable
 na_data &lt;- innerdata %&gt;% summarize_all(function(x) sum(is.na(x)))
-
-# style a table using kable
-tablenumeric &lt;- innerdata %&gt;% group_by(pvi_party) %&gt;% summarize_at(c(3:12, 
-    14), .funs = list(mean = mean, sd = sd, var = var), na.rm = T)
+glimpse(na_data)</code></pre>
+<pre><code>## Rows: 50
+## Columns: 16
+## $ state                       &lt;chr&gt; &quot;Alabama&quot;, &quot;Alaska&quot;, &quot;Arizona&quot;, &quot;Arkansas…
+## $ state_abbrev                &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ median_house_inc            &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ share_unemp_seas            &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ share_pop_metro             &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ share_pop_hs                &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ share_non_citizen           &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ share_white_poverty         &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ gini_index                  &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ share_non_white             &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ share_vote_trump            &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ hate_crimes_per_100k_splc   &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,…
+## $ avg_hatecrimes_per_100k_fbi &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,…
+## $ pvi_party                   &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ pvi_amount                  &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+## $ proportion_electionhc       &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,…</code></pre>
+<pre class="r"><code># style a table using kable
+tablenumeric &lt;- innerdata %&gt;% group_by(pvi_party) %&gt;% summarize(AvgHateCrimesPer100K = mean(avg_hatecrimes_per_100k_fbi, 
+    na.rm = T), AvgVoteTrump = mean(share_vote_trump, na.rm = T), 
+    AvgHSDegree = mean(share_pop_hs))
 library(knitr)
-tablenumeric %&gt;% kable(digits = 3, align = &quot;l&quot;, col.names = str_to_title(names(.)))</code></pre>
+tablenumeric %&gt;% kable(digits = 3, align = &quot;c&quot;)</code></pre>
 <table>
-<colgroup>
-<col width="1%"></col>
-<col width="3%"></col>
-<col width="3%"></col>
-<col width="3%"></col>
-<col width="2%"></col>
-<col width="3%"></col>
-<col width="3%"></col>
-<col width="2%"></col>
-<col width="3%"></col>
-<col width="3%"></col>
-<col width="4%"></col>
-<col width="2%"></col>
-<col width="2%"></col>
-<col width="2%"></col>
-<col width="2%"></col>
-<col width="2%"></col>
-<col width="3%"></col>
-<col width="3%"></col>
-<col width="2%"></col>
-<col width="2%"></col>
-<col width="2%"></col>
-<col width="4%"></col>
-<col width="2%"></col>
-<col width="3%"></col>
-<col width="3%"></col>
-<col width="2%"></col>
-<col width="2%"></col>
-<col width="3%"></col>
-<col width="3%"></col>
-<col width="2%"></col>
-<col width="2%"></col>
-<col width="3%"></col>
-<col width="4%"></col>
-<col width="2%"></col>
-</colgroup>
 <thead>
 <tr class="header">
-<th align="left">Pvi_party</th>
-<th align="left">Median_house_inc_mean</th>
-<th align="left">Share_unemp_seas_mean</th>
-<th align="left">Share_pop_metro_mean</th>
-<th align="left">Share_pop_hs_mean</th>
-<th align="left">Share_non_citizen_mean</th>
-<th align="left">Share_white_poverty_mean</th>
-<th align="left">Gini_index_mean</th>
-<th align="left">Share_non_white_mean</th>
-<th align="left">Share_vote_trump_mean</th>
-<th align="left">Hate_crimes_per_100k_splc_mean</th>
-<th align="left">Pvi_amount_mean</th>
-<th align="left">Median_house_inc_sd</th>
-<th align="left">Share_unemp_seas_sd</th>
-<th align="left">Share_pop_metro_sd</th>
-<th align="left">Share_pop_hs_sd</th>
-<th align="left">Share_non_citizen_sd</th>
-<th align="left">Share_white_poverty_sd</th>
-<th align="left">Gini_index_sd</th>
-<th align="left">Share_non_white_sd</th>
-<th align="left">Share_vote_trump_sd</th>
-<th align="left">Hate_crimes_per_100k_splc_sd</th>
-<th align="left">Pvi_amount_sd</th>
-<th align="left">Median_house_inc_var</th>
-<th align="left">Share_unemp_seas_var</th>
-<th align="left">Share_pop_metro_var</th>
-<th align="left">Share_pop_hs_var</th>
-<th align="left">Share_non_citizen_var</th>
-<th align="left">Share_white_poverty_var</th>
-<th align="left">Gini_index_var</th>
-<th align="left">Share_non_white_var</th>
-<th align="left">Share_vote_trump_var</th>
-<th align="left">Hate_crimes_per_100k_splc_var</th>
-<th align="left">Pvi_amount_var</th>
+<th align="center">pvi_party</th>
+<th align="center">AvgHateCrimesPer100K</th>
+<th align="center">AvgVoteTrump</th>
+<th align="center">AvgHSDegree</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">Democratic</td>
-<td align="left">60800.11</td>
-<td align="left">0.049</td>
-<td align="left">0.841</td>
-<td align="left">0.877</td>
-<td align="left">0.071</td>
-<td align="left">0.082</td>
-<td align="left">0.457</td>
-<td align="left">0.359</td>
-<td align="left">0.396</td>
-<td align="left">0.398</td>
-<td align="left">14.316</td>
-<td align="left">7401.270</td>
-<td align="left">0.009</td>
-<td align="left">0.167</td>
-<td align="left">0.029</td>
-<td align="left">0.027</td>
-<td align="left">0.018</td>
-<td align="left">0.018</td>
-<td align="left">0.183</td>
-<td align="left">0.049</td>
-<td align="left">0.204</td>
-<td align="left">10.657</td>
-<td align="left">54778801</td>
-<td align="left">0</td>
-<td align="left">0.028</td>
-<td align="left">0.001</td>
-<td align="left">0.001</td>
-<td align="left">0.000</td>
-<td align="left">0</td>
-<td align="left">0.034</td>
-<td align="left">0.002</td>
-<td align="left">0.042</td>
-<td align="left">113.561</td>
+<td align="center">Democratic</td>
+<td align="center">2.699</td>
+<td align="center">0.396</td>
+<td align="center">0.877</td>
 </tr>
 <tr class="even">
-<td align="left">Republican</td>
-<td align="left">51384.68</td>
-<td align="left">0.049</td>
-<td align="left">0.687</td>
-<td align="left">0.864</td>
-<td align="left">0.042</td>
-<td align="left">0.100</td>
-<td align="left">0.449</td>
-<td align="left">0.279</td>
-<td align="left">0.562</td>
-<td align="left">0.200</td>
-<td align="left">18.548</td>
-<td align="left">8237.487</td>
-<td align="left">0.012</td>
-<td align="left">0.164</td>
-<td align="left">0.037</td>
-<td align="left">0.027</td>
-<td align="left">0.025</td>
-<td align="left">0.017</td>
-<td align="left">0.139</td>
-<td align="left">0.065</td>
-<td align="left">0.103</td>
-<td align="left">11.905</td>
-<td align="left">67856197</td>
-<td align="left">0</td>
-<td align="left">0.027</td>
-<td align="left">0.001</td>
-<td align="left">0.001</td>
-<td align="left">0.001</td>
-<td align="left">0</td>
-<td align="left">0.019</td>
-<td align="left">0.004</td>
-<td align="left">0.011</td>
-<td align="left">141.723</td>
+<td align="center">Republican</td>
+<td align="center">1.898</td>
+<td align="center">0.562</td>
+<td align="center">0.864</td>
 </tr>
 </tbody>
 </table>

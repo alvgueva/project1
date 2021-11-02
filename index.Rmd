@@ -115,15 +115,17 @@ innerdata %>% filter(median_house_inc < 48500) %>% select(pvi_party, median_hous
 innerdata %>% group_by(state,pvi_party) %>% select(pvi_amount) %>% arrange(desc(pvi_amount))
 
 #Find the mean, sd, and variance of each numeric variable from original inner join, grouping by party
-innerdata %>% group_by(pvi_party) %>% summarize_at(c(3:12,14), .funs = list(mean=mean,sd=sd, var=var), na.rm=T)
+innerdata %>% group_by(pvi_party) %>% summarize_at(c(3:12,14), .funs = list(mean=mean,sd=sd, var=var), na.rm=T) -> innernumericsum
+head(innernumericsum)
 
 #number of NAs for each variable
 na_data <- innerdata %>% summarize_all(function(x)sum(is.na(x)))
+glimpse(na_data)
 
 #style a table using kable
-innerdata %>% group_by(pvi_party) %>% summarize_at(c(3:12,14), .funs = list(mean=mean,sd=sd, var=var), na.rm=T) -> tablenumeric
+innerdata %>% group_by(pvi_party) %>% summarize(AvgHateCrimesPer100K=mean(avg_hatecrimes_per_100k_fbi, na.rm = T), AvgVoteTrump=mean(share_vote_trump, na.rm=T), AvgHSDegree=mean(share_pop_hs)) -> tablenumeric
 library(knitr)
-tablenumeric %>% kable(digits = 3, align = 'l', col.names=str_to_title(names(.)))
+tablenumeric %>% kable(digits = 3, align = 'c')
 ```
 
 For data wrangling, I focused on answering some of the questions I had from looking at the data from the joined datasets that I knew could be answered from the different dplyr functions. I just went down on the list of questions I had, which is how the wrangling process was done. One question I had was which state and its partisan lean is associated with the highest average hate crimes. And I was surprised to see that the state associated with that was a northern state as well as Democratic leaning. I had a different assumption, so it was interesting to know what the reality was. 
