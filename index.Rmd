@@ -23,11 +23,13 @@ tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
 
 #### Introduction 
 
-Paragraph or two introducing your datasets and variables, why they are interesting to you, etc.
+The two datasets I have chosen are related to state information on the number of hate crimes and the political parties they lean to. I chose these datasets because I was interested to see and investigate if a state's partisan lean is connected to its average hate crimes in any way. This interest of mine coming from the divisiveness and tension of today's political atmosphere that has remained even after the end of the last presidency. The ID variable in common is 'state'. In the 'partisan_lean_state' dataset, the variables include states partisan lean represented by 'pvi_party' and partisan voting index represented by 'pvi_amount'. In the 'hate_crimes' dataset, some of the variables include median household income represented by 'median_house_inc', hate crimes per 100,000 population represented by 'hate_crimes_per_100k_splc', and average annual hate crimes per 100,000 represented by avg_hatecrimes_per_100k_fbi". The datasets are from the FiveThirtyEight package in R.
 
 ```{R}
-# read your datasets in here, e.g., with read_csv()
-
+# read datasets
+library(fivethirtyeight)
+hatecrimes <- hate_crimes
+stateparties <- partisan_lean_state
 ```
 
 #### Tidying: Reshaping
@@ -35,56 +37,128 @@ Paragraph or two introducing your datasets and variables, why they are interesti
 If your datasets are tidy already, demonstrate that you can reshape data with pivot wider/longer here (e.g., untidy and then retidy). Alternatively, it may be easier to wait until the wrangling section so you can reshape your summary statistics. Note here if you are going to do this.
 
 ```{R}
-# your tidying code (if applicable; can also wait until wrangling section)
+# tidyverse
+library(tidyverse)
+
+#untidy 'hatecrimes' dataset with pivot_wider and then retidy it with pivot_longer
+#save as a new object
+hatecrimes1 <- hatecrimes %>% pivot_wider(names_from="state",values_from="share_vote_trump")
+hatecrimes1 <- hatecrimes1 %>% pivot_longer(12:62, names_to="state", values_to="share_vote_trump", values_drop_na=T) %>% relocate(state, .before = state_abbrev) %>% relocate(share_vote_trump, .before = hate_crimes_per_100k_splc) 
+
+##untidy 'stateparties' dataset with pivot_wider and then retidy it with pivot_longer
+#save as a new object
+stateparties1 <- partisan_lean_state %>% pivot_wider(names_from="state",values_from="pvi_party")
+stateparties1 <- stateparties1 %>% pivot_longer(2:51, names_to="state", values_to="pvi_party", values_drop_na=T) %>% arrange(state) %>% relocate(state, pvi_party, .before = pvi_amount)
 ```
 
     
 #### Joining/Merging
 
 ```{R}
-# your joining code
+# how many observations/rows
+nrow(hatecrimes1)
+nrow(stateparties1)
 
-# your joining code
+#distinct IDs in each original dataset
+nrow(distinct(hatecrimes1))
+nrow(distinct(stateparties1))
 ```
 
-Discussions of joining here. Feel encouraged to break up into more than once code chunk and discuss each in turn.
+There were 51 observations/rows in the 'hatecrimes1' dataset, as well as 51 unique IDs. There were 50 observations/rows in the 'stateparties1' dataset, as well as 50 unique IDs.
+
+```{R}
+# How many IDs are in `hatecrimes1` that do not appear in `stateparties1`?
+hatecrimes1 %>% anti_join(stateparties1, by="state")
+
+#How many IDs are in `stateparties1` that do not appear in `hatecrimes1`?
+stateparties1 %>% anti_join(hatecrimes1, by="state")
+
+#How many IDs do the two datasets have in common?
+hatecrimes1 %>% inner_join(stateparties1, by="state")
+```
+
+There is one ID (District of Columbia) that is in 'hatecrimes1' that does not appear in 'stateparties1'. There are no IDs in 'stateparties1' that do not appear in 'hatecrimes1'. The two datasets have 50 IDs in common.
+
+```{R}
+# inner join 'stateparties1' to 'hatecrimes1'
+innerdata <- hatecrimes1 %>% inner_join(stateparties1, by="state")
+```
+
+I chose to inner join the 'stateparties1' dataset and the 'hatecrimes1' dataset because I wanted all observations to have a value for 'pvi_party" and 'pvi_amount' for each state since that's the information I'm interested in using. Not removing the one ID (District of Columbia) from the 'hatecrimes1' dataset would leave me with no values for the two previously mentioned variables and would not help me in analyzing my data. Therefore inner joining the datasets was the best choice. Since only one ID/row was dropped, there should not be any potential problems. 
 
 ####  Wrangling
 
 ```{R}
-# your wrangling code
+# use mutate and str_replace to change "R" and "D" values in the 'pvi_party' column to the full names of the parties
+innerdata <- innerdata %>% mutate(pvi_party=str_replace(pvi_party, "R", "Republican")) %>%
+  mutate(pvi_party=str_replace(pvi_party, "D", "Democratic"))
 
-# your wrangling code
+# create new variable calculating the proportion of hate crimes in the week after the Nov 2016 election compared to the yearly average of hate crimes per state
+innerdata %>% group_by(state) %>% summarize(proportion_electionhc= hate_crimes_per_100k_splc/avg_hatecrimes_per_100k_fbi)
 
-# your wrangling code
+innerdata <- innerdata %>% group_by(state) %>% mutate(proportion_electionhc= hate_crimes_per_100k_splc/avg_hatecrimes_per_100k_fbi)
+
+# How many of each party are in the dataset (count)? How many unique?
+innerdata %>% group_by(pvi_party) %>% summarize(n(), n_distinct(pvi_party))
+glimpse(innerdata %>% summarize_all(n_distinct))
+
+#Which state and its partisan lean is associated with the highest average hate crimes per 100k?
+innerdata %>% group_by(state, pvi_party) %>% select(avg_hatecrimes_per_100k_fbi) %>% arrange(desc(avg_hatecrimes_per_100k_fbi))
+
+#Which party has the highest average hate crimes per 100k?
+innerdata %>% group_by(pvi_party) %>% summarize(mean(avg_hatecrimes_per_100k_fbi, na.rm = T))
+
+# What party do low median household income populations tend to vote?
+innerdata %>% filter(median_house_inc < 48500) %>% select(pvi_party, median_house_inc, state)
+
+# Which state has the highest pvi amount and what is its partisan lean?
+innerdata %>% group_by(state,pvi_party) %>% select(pvi_amount) %>% arrange(desc(pvi_amount))
+
+#Find the mean, sd, and variance of each numeric variable from original inner join, grouping by party
+innerdata %>% group_by(pvi_party) %>% summarize_at(c(3:12,14), .funs = list(mean=mean,sd=sd, var=var), na.rm=T)
+
+#number of NAs for each variable
+na_data <- innerdata %>% summarize_all(function(x)sum(is.na(x)))
+
+#style a table using kable
+innerdata %>% group_by(pvi_party) %>% summarize_at(c(3:12,14), .funs = list(mean=mean,sd=sd, var=var), na.rm=T) -> tablenumeric
+library(knitr)
+tablenumeric %>% kable(digits = 3, align = 'l', col.names=str_to_title(names(.)))
 ```
 
-Your discussion of wrangling section here. Feel encouraged to break up into more than once code chunk and discuss each in turn.
+For data wrangling, I focused on answering some of the questions I had from looking at the data from the joined datasets that I knew could be answered from the different dplyr functions. I just went down on the list of questions I had, which is how the wrangling process was done. One question I had was which state and its partisan lean is associated with the highest average hate crimes. And I was surprised to see that the state associated with that was a northern state as well as Democratic leaning. I had a different assumption, so it was interesting to know what the reality was. 
+
+Another question I had that was answered was what party do low median household income populations tend to vote for. It was interesting to see that most of those populations tend to be Republican leaning, which is what I had predicted before analyzing. I was also not surprised to see that the states with the highest PVI amounts were mostly Republican leaning as well, but it was still very interesting to see. I was also very surprised to see that the party associated with the highest average hate crimes per 100k was Democratic. It was not a finding I expected, but I know there are many other variables/factors that could have lead to that result which is not explained in the dataset.
 
 
 #### Visualizing
 
 ```{R}
-# your plot 1
+# white residents in poverty vs. hate crimes scatterplot
+innerdata %>% ggplot(aes(share_white_poverty, hate_crimes_per_100k_splc, color=pvi_party)) + ggtitle("White Residents in Poverty vs. Hate Crimes Per 100,000 Population by Party") + geom_point() + geom_smooth(method = "lm") + xlab("Share of White Residents in Poverty") + ylab("Hate Crimes Per 100K") + scale_color_brewer(palette="Accent")
 ```
 
-Your discussion of plot 1
+I created a scatterplot because I wanted to visualize another aspect of the data which was if the variable "share of white residents in poverty" had a strong positive linear relationship with hate crimes per 100,000 population for each party. From the scatterplot we can see that there is an effect of states partisan lean on the relationship between white residents in poverty and hate crimes. For the Democratic party leaning states, there seems to be a strong positive linear relationship between the variables. For the Republican party leaning states, there seems to be a weak positive linear relationship between the variables. 
 
 ```{R}
-# your plot 2
+# pvi_amount density plot by party
+innerdata %>% group_by(pvi_party) %>% ggplot(aes(pvi_amount,fill=pvi_party))+
+  geom_density(alpha=0.6) + ggtitle("Partisan Voting Index Distribution by Party") + xlab("Partisan Voting Index") + scale_fill_brewer(palette="Dark2") + geom_vline(aes(xintercept = mean(pvi_amount), linetype="dashed"))
 ```
 
-Your discussion of plot 2
+I created a density plot because I wanted to visualize the overlap of states partisan lean distributions in regards to their partisan voting index. There does in fact seem to be a lot of overlap between the Democratic and Republican parties. However the partisan voting index peak for the Democratic party is lower than the peak for the Republican party, meaning that the Republican party seems to have a higher PVI.
 
 ```{R}
-# your plot 3
+# barplot of mean average annual hatecrimes per 100,000 population by partisan lean
+innerdata %>% ggplot(aes(x = pvi_party))+
+  geom_bar(aes(y=avg_hatecrimes_per_100k_fbi), stat="summary", fun=mean) + ggtitle("Average Annual Hatecrimes per 100K by Partisan Lean") + xlab("Party") + ylab("Average Hate Crimes Per 100k") + theme_classic() + geom_errorbar(aes(y=avg_hatecrimes_per_100k_fbi),stat="summary", fun.data=mean_se, width=.5)
 ```
 
-Your discussion of plot 3
+I created a barplot to visualize the overall partisan lean from the dataset. I was interested to see which party (gathered from all states) was associated with the highest average hate crimes per 100,000 population. Again, I was surprised to see that the Democratic leaning states had the highest average hate crimes compared to the Republican leaning states average. Being able to visually see the data I was working with has been beneficial in explicitly showing the relationships between variables and the insights I now have from the data.
 
 #### Concluding Remarks
 
-If any!
+I started this data analysis project out of my interest in seeing the relationship between states partisan lean and hate crimes commited in the U.S. Some of the assumptions I had about what the results would look like were proven wrong, which was surprising, but beneficial towards my knowledge about both the topic and the process of data analysis.
 
 
 
