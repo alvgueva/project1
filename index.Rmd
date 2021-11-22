@@ -17,11 +17,11 @@ knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = 
 tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
 ```
 
-## Data Wrangling, Exploration, Visualization
+# Data Wrangling, Exploration, Visualization
 
-### Alvaro Guevara ag58974
+## Alvaro Guevara ag58974
 
-#### Introduction 
+### Introduction 
 
 The two datasets I have chosen are related to state information on the number of hate crimes and the political parties they lean to. I chose these datasets because I was interested to see and investigate if a state's partisan lean is connected to its average hate crimes in any way. This interest of mine coming from the divisiveness and tension of today's political atmosphere that has remained even after the end of the last presidency. The ID variable in common is 'state'. In the 'partisan_lean_state' dataset, the variables include states partisan lean represented by 'pvi_party' and partisan voting index represented by 'pvi_amount'. In the 'hate_crimes' dataset, some of the variables include median household income represented by 'median_house_inc', hate crimes per 100,000 population represented by 'hate_crimes_per_100k_splc', and average annual hate crimes per 100,000 represented by avg_hatecrimes_per_100k_fbi". The datasets are from the FiveThirtyEight package in R.
 
@@ -32,7 +32,7 @@ hatecrimes <- hate_crimes
 stateparties <- partisan_lean_state
 ```
 
-#### Tidying: Reshaping
+### Tidying: Reshaping
 
 If your datasets are tidy already, demonstrate that you can reshape data with pivot wider/longer here (e.g., untidy and then retidy). Alternatively, it may be easier to wait until the wrangling section so you can reshape your summary statistics. Note here if you are going to do this.
 
@@ -52,7 +52,7 @@ stateparties1 <- stateparties1 %>% pivot_longer(2:51, names_to="state", values_t
 ```
 
     
-#### Joining/Merging
+### Joining/Merging
 
 ```{R}
 # how many observations/rows
@@ -86,7 +86,7 @@ innerdata <- hatecrimes1 %>% inner_join(stateparties1, by="state")
 
 I chose to inner join the 'stateparties1' dataset and the 'hatecrimes1' dataset because I wanted all observations to have a value for 'pvi_party" and 'pvi_amount' for each state since that's the information I'm interested in using. Not removing the one ID (District of Columbia) from the 'hatecrimes1' dataset would leave me with no values for the two previously mentioned variables and would not help me in analyzing my data. Therefore inner joining the datasets was the best choice. Since only one ID/row was dropped, there should not be any potential problems. 
 
-####  Wrangling
+###  Wrangling
 
 ```{R}
 # use mutate and str_replace to change "R" and "D" values in the 'pvi_party' column to the full names of the parties
@@ -133,7 +133,7 @@ For data wrangling, I focused on answering some of the questions I had from look
 Another question I had that was answered was what party do low median household income populations tend to vote for. It was interesting to see that most of those populations tend to be Republican leaning, which is what I had predicted before analyzing. I was also not surprised to see that the states with the highest PVI amounts were mostly Republican leaning as well, but it was still very interesting to see. I was also very surprised to see that the party associated with the highest average hate crimes per 100k was Democratic. It was not a finding I expected, but I know there are many other variables/factors that could have lead to that result which is not explained in the dataset.
 
 
-#### Visualizing
+### Visualizing
 
 ```{R}
 # white residents in poverty vs. hate crimes scatterplot
@@ -158,7 +158,7 @@ innerdata %>% ggplot(aes(x = pvi_party))+
 
 I created a barplot to visualize the overall partisan lean from the dataset. I was interested to see which party (gathered from all states) was associated with the highest average hate crimes per 100,000 population. Again, I was surprised to see that the Democratic leaning states had the highest average hate crimes compared to the Republican leaning states average. Being able to visually see the data I was working with has been beneficial in explicitly showing the relationships between variables and the insights I now have from the data.
 
-#### Concluding Remarks
+### Concluding Remarks
 
 I started this data analysis project out of my interest in seeing the relationship between states partisan lean and hate crimes commited in the U.S. Some of the assumptions I had about what the results would look like were proven wrong, which was surprising, but beneficial towards my knowledge about both the topic and the process of data analysis.
 
