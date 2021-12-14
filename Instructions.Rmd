@@ -166,15 +166,23 @@ Prerequisite: Finding appropriate data from at least two sources per the instruc
 2. In the terminal, run the following code, changing your username accordingly
 
 ```{bash, eval=F}
-cd ~/project1 #cd to your project1 directory
+cd ~/project1 or ~/project2 #cd to your project1 and project2 directory
 git add .
 git commit -m "message"
-git remote add origin https://github.com/YOUR_USERNAME/project1.git
+git remote set-url origin https://github.com/YOUR_USERNAME/project1.git
 git push origin main
+
+
+#specifically for project 3
+cd ~/project3 #cd to your project1 directory
+git add .
+git commit -m "message"
+git remote set-url origin https://github.com/YOUR_USERNAME/project1.git
+git push -u origin master
 ```
 
 - Once it is up there, go to your remote repository and then to Settings > Options and scroll down to GitHub pages. Alternately, go to 
-https://github.com/YOUR_USERNAME/project1/settings/pages. Then, select the main branch and click save. Finally, go back to your homepage repository, go to the Portfolio.Rmd page, and update the link for project1 to YOUR_USERNAME.github.io/project1. Add, commit, and push your updated homepage to GitHub for deployment.
+https://github.com/YOUR_USERNAME/project1/settings/pages. Then, select the main/master branch and click save. Finally, go back to your homepage repository, go to the Portfolio.Rmd page, and update the link for project1 to YOUR_USERNAME.github.io/project1. Add, commit, and push your updated homepage to GitHub for deployment.
 
 - Your project MUST be live at YOUR_USERNAME.github.io/project1 to receive a grade. Failure to do this before the due date will result in a late deduction.
 
