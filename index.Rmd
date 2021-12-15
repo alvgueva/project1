@@ -1,6 +1,6 @@
 ---
-title: 'Project 1: Wrangling, Exploration, Visualization'
-author: "SDS322E"
+title: 'Data Wrangling, Data Analysis, and Data Visualization'
+author: "Alvaro Guevara"
 date: ''
 output:
   html_document:
@@ -17,9 +17,8 @@ knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = 
 tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
 ```
 
-# Data Wrangling, Exploration, Visualization
+## Hate Crimes vs. Partisan Lean Across States
 
-## Alvaro Guevara ag58974
 
 ### Introduction 
 
